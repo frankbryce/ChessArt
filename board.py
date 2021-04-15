@@ -105,6 +105,9 @@ class Board:
 
     def Box(self) -> BoundingBox:
         return ((self.minx, self.miny), (self.maxx, self.maxy))
+
+    def Check(self, pos: Pos) -> bool:
+        return pos in self.pstns
             
     def Placements(self) -> set[Plmt]:
         return self.plmts

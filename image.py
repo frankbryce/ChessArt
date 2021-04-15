@@ -11,6 +11,7 @@ import os
 Color = tuple[int, int, int]
 ColorMap = dict[Piece, Color]
 DefaultColorMap = {
+    Piece.X: (0, 0, 0),
     Piece.P: (128, 128, 0),
     Piece.N: (128, 0, 128),
     Piece.B: (0, 128, 128),

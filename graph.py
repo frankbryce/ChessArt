@@ -5,6 +5,15 @@ from __future__ import annotations
 from collections.abc import Iterable
 from board import *
 from image import *
+from typing import Callable
+
+def DefaultPosSrtKey(pos: Pos) -> float:
+    ret = abs(pos[0]) + abs(pos[1])
+    if pos[0] > pos[1]:
+        ret += 0.1
+    else:
+        ret -= 0.1
+    return ret
 
 class Graph:
     def __init__(
@@ -13,9 +22,13 @@ class Graph:
                 Piece.N: Piece.B,
                 Piece.B: Piece.N,
             },
-            rad: int = 100) -> None:
-        self.rad = rad
+            branch: int = 1,
+            rad: int = 100,
+            posSrtKey: Callable[Pos, float] = DefaultPosSrtKey) -> None:
+        self.branch = branch
         self.nxt = nxt
+        self.posSrtKey = posSrtKey
+        self.rad = rad
 
     def Generate(
             self,
@@ -23,8 +36,14 @@ class Graph:
         board = Board()
         board.Add(start)
         def _mvs(last):
-            mvs = list(Moves(last))
-            return list(map(lambda m: (m, self.nxt[last.piece]), mvs))
+            # only return positions that aren't already on the board
+            mvs = filter(lambda mv: not board.Check(mv), Moves(last))
+            # sort them by the self.posSrtKey function
+            ret = list(
+                map(lambda m: (m, self.nxt[last.piece]),
+                    sorted(mvs, key=self.posSrtKey)))
+            # only return self.branch moves
+            return ret[:self.branch]
         mvQ = _mvs(start)
         while len(mvQ) > 0:
             mv, piece = mvQ.pop()
@@ -32,13 +51,13 @@ class Graph:
                 continue
             plmt = Plmt(piece, mv)
             _, success = board.TryAdd(plmt)
-            if success:
+            if success and plmt.piece != Piece.X:
                 mvQ.extend(_mvs(plmt))
         return board
 
 
-def main(bRad: str = "100", pRad: str = "0"):
-    graph = Graph(rad=int(bRad))
+def main(bRad: str = "100", branch: str = "1", pRad: str = "0"):
+    graph = Graph(rad=int(bRad), branch=int(branch))
     board = graph.Generate()
     BoardImage(board, splot=Splotch(rad=int(pRad))).Draw()
 
