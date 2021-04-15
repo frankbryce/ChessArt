@@ -8,6 +8,7 @@ import os
 import sys
 
 class Piece(Enum):
+    X = 0  # Placeholder with no color so pieces aren't added over top of them
     P = 1
     N = 2
     B = 3
@@ -36,7 +37,7 @@ def Moves(plmt: Plmt, maxDist: int = 1) -> Iterable[Pos]:
             ]:
             yield mv
         return
-    elif plmt.piece == Piece.K:
+    if plmt.piece == Piece.K:
         for mv in [
                 (plmt.pstn[0] + 1, plmt.pstn[1] + 1),
                 (plmt.pstn[0] + 1, plmt.pstn[1] - 1),
@@ -49,21 +50,22 @@ def Moves(plmt: Plmt, maxDist: int = 1) -> Iterable[Pos]:
             ]:
             yield mv
         return
-    elif plmt.piece == Piece.P:
+    if plmt.piece == Piece.P:
         for mv in [
                 (plmt.pstn[0] + 1, plmt.pstn[1] + 1),
                 (plmt.pstn[0] - 1, plmt.pstn[1] + 1),
             ]:
             yield mv
         return
-    elif plmt.piece == Piece.B:
+    if plmt.piece == Piece.B or plmt.piece == Piece.Q:
         for d in range(maxDist):
             yield (plmt.pstn[0] + d + 1, plmt.pstn[1] + d + 1)
             yield (plmt.pstn[0] + d + 1, plmt.pstn[1] - d - 1)
             yield (plmt.pstn[0] - d - 1, plmt.pstn[1] + d + 1)
             yield (plmt.pstn[0] - d - 1, plmt.pstn[1] - d - 1)
-        return
-    elif plmt.piece == Piece.R:
+        if plmt.piece == Piece.B:
+            return
+    if plmt.piece == Piece.R or plmt.piece == Piece.Q:
         for d in range(maxDist):
             yield (plmt.pstn[0], plmt.pstn[1] + d + 1)
             yield (plmt.pstn[0], plmt.pstn[1] - d - 1)
