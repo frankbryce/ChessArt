@@ -22,29 +22,55 @@ class Plmt:
         self.piece = piece
         self.pstn = pos
 
-def Moves(plmt: Plmt) -> Iterable[Pos]:
+def Moves(plmt: Plmt, maxDist: int = 1) -> Iterable[Pos]:
     if plmt.piece == Piece.N:
-        return [
-            (plmt.pstn[0] + 2, plmt.pstn[1] + 1),
-            (plmt.pstn[0] - 2, plmt.pstn[1] + 1),
-            (plmt.pstn[0] + 2, plmt.pstn[1] - 1),
-            (plmt.pstn[0] - 2, plmt.pstn[1] - 1),
-            (plmt.pstn[0] + 1, plmt.pstn[1] + 2),
-            (plmt.pstn[0] - 1, plmt.pstn[1] + 2),
-            (plmt.pstn[0] + 1, plmt.pstn[1] - 2),
-            (plmt.pstn[0] - 1, plmt.pstn[1] - 2),
-        ]
+        for mv in [
+                (plmt.pstn[0] + 2, plmt.pstn[1] + 1),
+                (plmt.pstn[0] - 2, plmt.pstn[1] + 1),
+                (plmt.pstn[0] + 2, plmt.pstn[1] - 1),
+                (plmt.pstn[0] - 2, plmt.pstn[1] - 1),
+                (plmt.pstn[0] + 1, plmt.pstn[1] + 2),
+                (plmt.pstn[0] - 1, plmt.pstn[1] + 2),
+                (plmt.pstn[0] + 1, plmt.pstn[1] - 2),
+                (plmt.pstn[0] - 1, plmt.pstn[1] - 2),
+            ]:
+            yield mv
+        return
     elif plmt.piece == Piece.K:
-        return [
-            (plmt.pstn[0] + 1, plmt.pstn[1] + 1),
-            (plmt.pstn[0] + 1, plmt.pstn[1] - 1),
-            (plmt.pstn[0] - 1, plmt.pstn[1] + 1),
-            (plmt.pstn[0] - 1, plmt.pstn[1] - 1),
-            (plmt.pstn[0], plmt.pstn[1] + 1),
-            (plmt.pstn[0] + 1, plmt.pstn[1]),
-            (plmt.pstn[0], plmt.pstn[1] - 1),
-            (plmt.pstn[0] - 1, plmt.pstn[1]),
-        ]
+        for mv in [
+                (plmt.pstn[0] + 1, plmt.pstn[1] + 1),
+                (plmt.pstn[0] + 1, plmt.pstn[1] - 1),
+                (plmt.pstn[0] - 1, plmt.pstn[1] + 1),
+                (plmt.pstn[0] - 1, plmt.pstn[1] - 1),
+                (plmt.pstn[0], plmt.pstn[1] + 1),
+                (plmt.pstn[0] + 1, plmt.pstn[1]),
+                (plmt.pstn[0], plmt.pstn[1] - 1),
+                (plmt.pstn[0] - 1, plmt.pstn[1]),
+            ]:
+            yield mv
+        return
+    elif plmt.piece == Piece.P:
+        for mv in [
+                (plmt.pstn[0] + 1, plmt.pstn[1] + 1),
+                (plmt.pstn[0] - 1, plmt.pstn[1] + 1),
+            ]:
+            yield mv
+        return
+    elif plmt.piece == Piece.B:
+        for d in range(maxDist):
+            yield (plmt.pstn[0] + d + 1, plmt.pstn[1] + d + 1)
+            yield (plmt.pstn[0] + d + 1, plmt.pstn[1] - d - 1)
+            yield (plmt.pstn[0] - d - 1, plmt.pstn[1] + d + 1)
+            yield (plmt.pstn[0] - d - 1, plmt.pstn[1] - d - 1)
+        return
+    elif plmt.piece == Piece.R:
+        for d in range(maxDist):
+            yield (plmt.pstn[0], plmt.pstn[1] + d + 1)
+            yield (plmt.pstn[0], plmt.pstn[1] - d - 1)
+            yield (plmt.pstn[0] + d + 1, plmt.pstn[1])
+            yield (plmt.pstn[0] - d - 1, plmt.pstn[1])
+        return
+            
     raise Exception(f"Piece {plmt.piece} is not supported")
 
 BoundingBox = tuple[Pos, Pos]

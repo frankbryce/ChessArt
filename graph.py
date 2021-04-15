@@ -14,25 +14,27 @@ class Graph:
         board = Board()
         board.Add(start)
         pieceDict = {
-            Piece.K: Piece.N,
-            Piece.N: Piece.K,
+            Piece.N: Piece.B,
+            Piece.B: Piece.N,
         }
-        mvQ = Moves(start)
-        plmt = start
+        def _mvs(last):
+            mvs = list(Moves(last))
+            return list(map(lambda m: (m, pieceDict[last.piece]), mvs))
+        mvQ = _mvs(start)
         while len(mvQ) > 0:
-            mv = mvQ.pop()
+            mv, piece = mvQ.pop()
             if abs(mv[0]) > rad or abs(mv[1]) > rad:
                 continue
-            plmt = Plmt(pieceDict[plmt.piece], mv)
+            plmt = Plmt(piece, mv)
             _, success = board.TryAdd(plmt)
             if success:
-                mvQ.extend(Moves(plmt))
+                mvQ.extend(_mvs(plmt))
         return board
 
-def main(rad: str = "100"):
+def main(bRad: str = "100", pRad: str = "0"):
     graph = Graph()
-    board = graph.Generate(rad=int(rad))
-    BoardImage(board).Draw()
+    board = graph.Generate(rad=int(bRad))
+    BoardImage(board, splot=Splotch(rad=int(pRad))).Draw()
 
 
 if __name__ == "__main__":
