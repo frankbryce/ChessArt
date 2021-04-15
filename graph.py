@@ -59,7 +59,7 @@ class Graph:
 def main(bRad: str = "100", branch: str = "1", pRad: str = "0"):
     graph = Graph(rad=int(bRad), branch=int(branch))
     board = graph.Generate()
-    BoardImage(board, splot=Splotch(rad=int(pRad))).Draw()
+    BoardImage(board, splot=Splotch(rad=int(pRad))).DrawBmp()
 
 
 if __name__ == "__main__":
