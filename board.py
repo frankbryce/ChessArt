@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.9
 
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ class Plmt:
         self.pstn = pos
 
 
+BoundingBox = tuple[Pos, Pos]
 class Board:
     def __init__(self, plmts: list[Plmt] = []) -> None:
         self.plmts = set(plmts)
@@ -36,15 +37,24 @@ class Board:
         self.maxy = max(y, self.maxy)
 
 
-    def Add(self, plmt: Plmt) -> Board:
+    def Add(self, plmt: Plmt, check: bool = True) -> Board:
         if plmt.pstn in self.pstns:
-            raise Exception(
-                f"Position {plmt.pstn} already has a piece on it")
+            if check:
+                raise Exception(
+                    f"Position {plmt.pstn} already has a piece on it")
+            else:
+                return self
 
         self.plmts.add(plmt)
         self.pstns[plmt.pstn] = plmt
         self._boundingBoxRecomp(plmt.pstn[0], plmt.pstn[1])
         return self
+
+    def Box(self) -> BoundingBox:
+        return ((self.minx, self.miny), (self.maxx, self.maxy))
+            
+    def Placements(self) -> set[Plmt]:
+        return self.plmts
 
     def Remove(self, plmt: Plmt) -> Board:
         if plmt in self.plmts:
@@ -68,6 +78,7 @@ class Board:
             y = self.maxy - (plmt.pstn[1] - self.miny) + 1
             sys.stdout.write(f"\033[{y};{x}H{plmt.piece.name}")
         sys.stdout.flush()
+        print() # extra line so cli prompt doesn't overwrite last line
 
 
 def main():
