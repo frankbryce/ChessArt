@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from enum import Enum
 import os
 import sys
@@ -14,13 +15,37 @@ class Piece(Enum):
     Q = 5
     K = 6
 
-
 Pos = tuple[int, int]
+
 class Plmt:
     def __init__(self, piece: Piece, pos: Pos) -> None:
         self.piece = piece
         self.pstn = pos
 
+def Moves(plmt: Plmt) -> Iterable[Pos]:
+    if plmt.piece == Piece.N:
+        return [
+            (plmt.pstn[0] + 2, plmt.pstn[1] + 1),
+            (plmt.pstn[0] - 2, plmt.pstn[1] + 1),
+            (plmt.pstn[0] + 2, plmt.pstn[1] - 1),
+            (plmt.pstn[0] - 2, plmt.pstn[1] - 1),
+            (plmt.pstn[0] + 1, plmt.pstn[1] + 2),
+            (plmt.pstn[0] - 1, plmt.pstn[1] + 2),
+            (plmt.pstn[0] + 1, plmt.pstn[1] - 2),
+            (plmt.pstn[0] - 1, plmt.pstn[1] - 2),
+        ]
+    elif plmt.piece == Piece.K:
+        return [
+            (plmt.pstn[0] + 1, plmt.pstn[1] + 1),
+            (plmt.pstn[0] + 1, plmt.pstn[1] - 1),
+            (plmt.pstn[0] - 1, plmt.pstn[1] + 1),
+            (plmt.pstn[0] - 1, plmt.pstn[1] - 1),
+            (plmt.pstn[0], plmt.pstn[1] + 1),
+            (plmt.pstn[0] + 1, plmt.pstn[1]),
+            (plmt.pstn[0], plmt.pstn[1] - 1),
+            (plmt.pstn[0] - 1, plmt.pstn[1]),
+        ]
+    raise Exception(f"Piece {plmt.piece} is not supported")
 
 BoundingBox = tuple[Pos, Pos]
 class Board:
@@ -69,6 +94,15 @@ class Board:
             raise Exception(
                     f"Placement {plmt} is not on the Board")
         return self
+
+    def TryAdd(self, plmt: Plmt) -> tuple[Board, bool]:
+        if plmt.pstn in self.pstns:
+            return self, False
+
+        self.plmts.add(plmt)
+        self.pstns[plmt.pstn] = plmt
+        self._boundingBoxRecomp(plmt.pstn[0], plmt.pstn[1])
+        return self, True
 
     def Print(self) -> None:
         os.system('clear')

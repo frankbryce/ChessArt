@@ -81,7 +81,7 @@ class BoardImage:
         return pixels
                 
 
-    def Draw(self, loc: str, rescale: int = 1) -> None:
+    def Draw(self, loc: str = "images/tmp.bmp", rescale: int = 1) -> None:
         img = Image.new('RGB', (self.box[1][0] - self.box[0][0] + 1,
                                 self.box[1][1] - self.box[0][1] + 1))
         pixels = img.load() # Create the pixel map
