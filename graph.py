@@ -7,23 +7,28 @@ from board import *
 from image import *
 
 class Graph:
+    def __init__(
+            self,
+            nxt: dict[Piece, Piece] = {
+                Piece.N: Piece.B,
+                Piece.B: Piece.N,
+            },
+            rad: int = 100) -> None:
+        self.rad = rad
+        self.nxt = nxt
+
     def Generate(
             self,
-            start: Plmt = Plmt(Piece.N, (0,0)),
-            rad: int = 10) -> Board:
+            start: Plmt = Plmt(Piece.N, (0,0))) -> Board:
         board = Board()
         board.Add(start)
-        pieceDict = {
-            Piece.N: Piece.B,
-            Piece.B: Piece.N,
-        }
         def _mvs(last):
             mvs = list(Moves(last))
-            return list(map(lambda m: (m, pieceDict[last.piece]), mvs))
+            return list(map(lambda m: (m, self.nxt[last.piece]), mvs))
         mvQ = _mvs(start)
         while len(mvQ) > 0:
             mv, piece = mvQ.pop()
-            if abs(mv[0]) > rad or abs(mv[1]) > rad:
+            if abs(mv[0]) > self.rad or abs(mv[1]) > self.rad:
                 continue
             plmt = Plmt(piece, mv)
             _, success = board.TryAdd(plmt)
@@ -31,9 +36,10 @@ class Graph:
                 mvQ.extend(_mvs(plmt))
         return board
 
+
 def main(bRad: str = "100", pRad: str = "0"):
-    graph = Graph()
-    board = graph.Generate(rad=int(bRad))
+    graph = Graph(rad=int(bRad))
+    board = graph.Generate()
     BoardImage(board, splot=Splotch(rad=int(pRad))).Draw()
 
 
