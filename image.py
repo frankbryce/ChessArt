@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from board import *
+from datetime import datetime
 from enum import Enum
 import numpy as np
 from PIL import Image
 import os
+import svg_stack as ss
 
 Color = tuple[int, int, int]
 ColorMap = dict[Piece, Color]
@@ -95,19 +97,91 @@ class BoardImage:
         os.makedirs(os.path.dirname(loc), exist_ok=True)
         img.save(loc)
 
+    def DrawSvg(
+            self,
+            topOutDir: str = "images",
+            subOutDir: str = datetime.now().strftime('%Y%m%d_%H%M%S'),
+            outFileName: str = "tmp.svg",
+            svgInDir: str = "svg",
+            svgSz: int = 45) -> None:
+        # build a dict of {row: [Plmt]}
+        rowDict = {}
+        for plmt in self.board.Placements():
+            row = plmt.pstn[1]
+            if row not in rowDict:
+                rowDict[row] = []
+            rowDict[row].append(plmt)
+
+        rows = sorted(rowDict.keys())
+        minRow = rows[0]
+        maxRow = rows[-1]
+        hlayouts = []
+        for row in rows:
+            if row in rowDict:
+                # for each row, sort [Piece] by col
+                r = sorted(rowDict[row], key=lambda p: p.pstn[0])
+                minCol = r[0].pstn[0]
+                maxCol = r[-1].pstn[0]
+                # if first col isn't = bounding box minx, prepend empty piece
+                if minCol > self.board.Box()[0][0]:
+                    r = [Plmt(Piece.X, (self.board.Box()[0][0], row))] + r
+                # if last col isn't = bounding box maxx, append empty piece
+                if maxCol < self.board.Box()[1][0]:
+                    r = [Plmt(Piece.X, (self.board.Box()[1][0], row))] + r
+            else:
+                # if no pieces in row, make a layout bookmarked by blanks
+                r = [
+                    Plmt(Piece.X, (self.board.Box()[0][0], row)),
+                    Plmt(Piece.X, (self.board.Box()[1][0], row)),
+                ]
+
+            # put first item into hlayout. save last piece
+            lastLyt = ss.HBoxLayout()
+            color = "white"
+            if plmt.pstn[0] == plmt.pstn[1] == 0:
+                color = "black"
+            lastLyt.addSVG(f"{svgInDir}/{color}/{r[0].piece.name}.svg",
+                    alignment=ss.AlignLeft)
+            lastPlmt = r[0]
+            for plmt in r[1:]:
+                # for each piece, create new hlayout, add last layout w/ proper spacing
+                lyt = ss.HBoxLayout()
+                lyt.setSpacing(svgSz * (plmt.pstn[0]-lastPlmt.pstn[0]-1))
+                lyt.addLayout(lastLyt)
+                color = "white"
+                if plmt.pstn[0] == plmt.pstn[1] == 0:
+                    color = "black"
+                lyt.addSVG(f"{svgInDir}/{color}/{plmt.piece.name}.svg",
+                        alignment=ss.AlignLeft)
+                lastLyt, lastPlmt = lyt, plmt
+            hlayouts.append(lyt)
+
+        # for each hlayout, append into vlayout
+        vlayout = ss.VBoxLayout()
+        for hlayout in hlayouts:
+            vlayout.addLayout(hlayout)
+
+        # make doc and save to outdir
+        doc = ss.Document()
+        doc.setLayout(vlayout)
+        loc = f"{topOutDir}/{subOutDir}/{outFileName}"
+        os.makedirs(os.path.dirname(loc), exist_ok=True)
+        doc.save(loc)
+
 
 def main(imageLoc:str ='images/tmp.bmp', rescale: int=500) -> None:
     board = Board()
 
-    for x in range(25000):
+    for x in range(100):
         piece = Piece(np.random.randint(6)+1)
         board.Add(
             Plmt(piece,
-                (np.random.randint(500), np.random.randint(500))),
+                (np.random.randint(20), np.random.randint(20))),
             check = False)
 
     img = BoardImage(board)
     img.DrawBmp(imageLoc)
+    img.DrawSvg()
 
 
 if __name__ == "__main__":
