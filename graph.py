@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from enum import Enum
 from board import *
 from image import *
 from typing import Callable
@@ -15,12 +16,15 @@ def DefaultPosSrtKey(pos: Pos) -> float:
         ret -= 0.1
     return ret
 
+class DrawType(Enum):
+    SVG = 1
+    PATH = 2
+
 class Graph:
     def __init__(
             self,
             nxt: dict[Piece, Piece] = {
-                Piece.N: Piece.B,
-                Piece.B: Piece.N,
+                Piece.N: Piece.N,
             },
             branch: int = 1,
             rad: int = 100,
@@ -30,11 +34,34 @@ class Graph:
         self.posSrtKey = posSrtKey
         self.rad = rad
 
-    def Generate(
+    def Tour(
             self,
-            start: Plmt = Plmt(Piece.N, (0,0))) -> Board:
+            start: Plmt = Plmt(Piece.N, (0,0)),
+            drawType: DrawType = DrawType.PATH,
+            debug: bool = False) -> Board:
+        if drawType not in (DrawType.SVG,DrawType.PATH):
+            raise Exception(f'No support for {drawType} in Tour()')
         board = Board()
-        board.Add(start)
+        drawer = BoardImage(board)
+        cnt = 0
+        plmts = []
+        def _add(p, add=False):
+            nonlocal cnt
+            nonlocal plmts
+            if debug:
+                print(p.pstn, p.piece)
+            if add:
+                board.Add(p)
+            if drawType == DrawType.SVG:
+                drawer.DrawSvg(
+                    subOutDir='knight_tour',
+                    outFileName=f'{cnt}.svg',
+                )
+            elif drawType == DrawType.PATH:
+                plmts.append(p)
+            cnt += 1
+            
+        _add(start, True)
         def _mvs(last):
             # only return positions that aren't already on the board
             mvs = filter(lambda mv: not board.Check(mv), Moves(last))
@@ -52,15 +79,20 @@ class Graph:
             plmt = Plmt(piece, mv)
             _, success = board.TryAdd(plmt)
             if success and plmt.piece != Piece.X:
+                _add(plmt)
                 mvQ.extend(_mvs(plmt))
+        if drawType == DrawType.PATH:
+            BoardImage.DrawPath(plmts)
         return board
 
 
-def main(bRad: str = "100", branch: str = "1", pRad: str = "0"):
+def main(
+    bRad: str = "100",
+    branch: str = "1",
+    debug: str = "False",
+    pRad: str = "0"):
     graph = Graph(rad=int(bRad), branch=int(branch))
-    board = graph.Generate()
-    board = BoardImage(board, splot=Splotch(rad=int(pRad)))
-    board.DrawSvg()
+    board = graph.Tour(debug=(debug.lower()=="true"))
 
 if __name__ == "__main__":
     main(*sys.argv[1:])
