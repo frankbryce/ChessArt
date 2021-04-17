@@ -5,6 +5,7 @@ from __future__ import annotations
 from board import *
 from datetime import datetime
 from enum import Enum
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import os
@@ -154,7 +155,7 @@ class BoardImage:
                 lyt.addSVG(f"{svgInDir}/{color}/{plmt.piece.name}.svg",
                         alignment=ss.AlignLeft)
                 lastLyt, lastPlmt = lyt, plmt
-            hlayouts.append(lyt)
+            hlayouts.append(lastLyt)
 
         # for each hlayout, append into vlayout
         vlayout = ss.VBoxLayout()
@@ -168,6 +169,22 @@ class BoardImage:
         os.makedirs(os.path.dirname(loc), exist_ok=True)
         doc.save(loc)
 
+    @staticmethod
+    def DrawPath(plmts: [Plmt]) -> None:
+        fig = plt.figure(frameon=False)
+        ax = plt.Axes(fig, [0.,0.,1.,1.])
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        for i, plmt in enumerate(plmts):
+            if i == len(plmts)-1:
+                break
+            plt.plot(
+                [plmts[i].pstn[0], plmts[i+1].pstn[0]],
+                [plmts[i].pstn[1], plmts[i+1].pstn[1]], 'ro-')
+        fig.savefig(
+            "images/tmp.png",
+            bbox_inches='tight',
+            pad_inches=0)
 
 def main(imageLoc:str ='images/tmp.bmp', rescale: int=500) -> None:
     board = Board()
