@@ -87,23 +87,30 @@ class Tour:
             BoardImage.DrawPath(plmts)
         return board
 
-def main(graphRadius, branch, debug, drawType, pixelRadius, nextPieceDict):
-    tour = Tour(
-        rad=int(graphRadius),
-        branch=int(branch),
-        drawType=DrawType[drawType],
-        debug=(debug.lower()=="true"),
-        nxt=json.loads(nextPieceDict))
-    board = tour.Build()
+def main(
+        graphRadius: int,
+        branch: int,
+        tour: bool,
+        debug: bool,
+        drawType: str,
+        pixelRadius: int,
+        nextPieceDict: str):
+    if tour:
+        Tour(
+            rad=graphRadius,
+            branch=branch,
+            drawType=DrawType[drawType],
+            debug=debug,
+            nxt=json.loads(nextPieceDict)).Build()
 
 if __name__ == "__main__":
     p = ArgParser(default_config_files=["graph.conf"])
-    p.add("--branch",
-          help="for tour graphs, the branching factor for each hop.")
-    p.add("--debug", help="prints debugging info")
-    p.add("--graphRadius", help="max abs(x) or abs(y) coord for graph.")
-    p.add("--drawType", help="which DrawType to use for rendoring board")
-    p.add("--pixelRadius", help="for .bmp renders, radius for each piece's color")
-    p.add("--nextPieceDict", help="defines piece ordering for a Tour")
+    p.add("--branch", type=int, help="in tour graph: branch factor for each hop.")
+    p.add("--tour", type=bool, help="whether to make a tour graph")
+    p.add("--debug", type=bool, help="prints debugging info")
+    p.add("--graphRadius", type=int, help="max abs(x) or abs(y) coord for graph.")
+    p.add("--drawType", type=str, help="which DrawType to use for rendoring board")
+    p.add("--pixelRadius", type=int, help="for .bmp renders, radius for each piece's color")
+    p.add("--nextPieceDict", type=str, help="defines piece ordering for a Tour")
     main(**vars(p.parse_args()))
 
