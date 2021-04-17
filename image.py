@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from board import *
+from configargparse import ArgParser
 from datetime import datetime
 from enum import Enum
 import matplotlib.pyplot as plt

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from configargparse import ArgParser
 from enum import Enum
 from board import *
 from image import *
+import json
 from typing import Callable
 
 def DefaultPosSrtKey(pos: Pos) -> float:
@@ -23,7 +25,7 @@ class DrawType(Enum):
 class Tour:
     def __init__(
             self,
-            nxt: dict[Piece, Piece] = {
+            nxt: dict[str, str] = {
                 Piece.N: Piece.N,
             },
             branch: int = 1,
@@ -67,7 +69,7 @@ class Tour:
             mvs = filter(lambda mv: not board.Check(mv), Moves(last))
             # sort them by the self.posSrtKey function
             ret = list(
-                map(lambda m: (m, self.nxt[last.piece]),
+                map(lambda m: (m, Piece[self.nxt[last.piece.name]]),
                     sorted(mvs, key=self.posSrtKey)))
             # only return self.branch moves
             return ret[:self.branch]
@@ -85,15 +87,23 @@ class Tour:
             BoardImage.DrawPath(plmts)
         return board
 
-
-def main(
-    bRad: str = "100",
-    branch: str = "1",
-    debug: str = "False",
-    pRad: str = "0"):
-    tour = Tour(rad=int(bRad), branch=int(branch), debug=(debug.lower()=="true"))
+def main(graphRadius, branch, debug, drawType, pixelRadius, nextPieceDict):
+    tour = Tour(
+        rad=int(graphRadius),
+        branch=int(branch),
+        drawType=DrawType[drawType],
+        debug=(debug.lower()=="true"),
+        nxt=json.loads(nextPieceDict))
     board = tour.Build()
 
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    p = ArgParser(default_config_files=["graph.conf"])
+    p.add("--branch",
+          help="for tour graphs, the branching factor for each hop.")
+    p.add("--debug", help="prints debugging info")
+    p.add("--graphRadius", help="max abs(x) or abs(y) coord for graph.")
+    p.add("--drawType", help="which DrawType to use for rendoring board")
+    p.add("--pixelRadius", help="for .bmp renders, radius for each piece's color")
+    p.add("--nextPieceDict", help="defines piece ordering for a Tour")
+    main(**vars(p.parse_args()))
 
