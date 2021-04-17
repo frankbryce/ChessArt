@@ -25,13 +25,11 @@ class DrawType(Enum):
 class Tour:
     def __init__(
             self,
-            nxt: dict[str, str] = {
-                Piece.N: Piece.N,
-            },
+            nxt: dict[str, str] = {"N": "N"},
             branch: int = 1,
             debug: bool = False,
             drawType: DrawType = DrawType.PATH,
-            rad: int = 100,
+            rad: int = 10,
             posSrtKey: Callable[Pos, float] = DefaultPosSrtKey) -> None:
         self.branch = branch
         self.nxt = nxt
