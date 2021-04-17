@@ -20,26 +20,26 @@ class DrawType(Enum):
     SVG = 1
     PATH = 2
 
-class Graph:
+class Tour:
     def __init__(
             self,
             nxt: dict[Piece, Piece] = {
                 Piece.N: Piece.N,
             },
             branch: int = 1,
+            debug: bool = False,
+            drawType: DrawType = DrawType.PATH,
             rad: int = 100,
             posSrtKey: Callable[Pos, float] = DefaultPosSrtKey) -> None:
         self.branch = branch
         self.nxt = nxt
         self.posSrtKey = posSrtKey
         self.rad = rad
+        self.debug = debug
+        self.drawType = drawType
 
-    def Tour(
-            self,
-            start: Plmt = Plmt(Piece.N, (0,0)),
-            drawType: DrawType = DrawType.PATH,
-            debug: bool = False) -> Board:
-        if drawType not in (DrawType.SVG,DrawType.PATH):
+    def Build(self, start: Plmt = Plmt(Piece.N, (0,0))) -> Board:
+        if self.drawType not in (DrawType.SVG,DrawType.PATH):
             raise Exception(f'No support for {drawType} in Tour()')
         board = Board()
         drawer = BoardImage(board)
@@ -48,16 +48,16 @@ class Graph:
         def _add(p, add=False):
             nonlocal cnt
             nonlocal plmts
-            if debug:
+            if self.debug:
                 print(p.pstn, p.piece)
             if add:
                 board.Add(p)
-            if drawType == DrawType.SVG:
+            if self.drawType == DrawType.SVG:
                 drawer.DrawSvg(
                     subOutDir='knight_tour',
                     outFileName=f'{cnt}.svg',
                 )
-            elif drawType == DrawType.PATH:
+            elif self.drawType == DrawType.PATH:
                 plmts.append(p)
             cnt += 1
             
@@ -81,7 +81,7 @@ class Graph:
             if success and plmt.piece != Piece.X:
                 _add(plmt)
                 mvQ.extend(_mvs(plmt))
-        if drawType == DrawType.PATH:
+        if self.drawType == DrawType.PATH:
             BoardImage.DrawPath(plmts)
         return board
 
@@ -91,8 +91,8 @@ def main(
     branch: str = "1",
     debug: str = "False",
     pRad: str = "0"):
-    graph = Graph(rad=int(bRad), branch=int(branch))
-    board = graph.Tour(debug=(debug.lower()=="true"))
+    tour = Tour(rad=int(bRad), branch=int(branch), debug=(debug.lower()=="true"))
+    board = tour.Build()
 
 if __name__ == "__main__":
     main(*sys.argv[1:])
