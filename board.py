@@ -16,12 +16,17 @@ class Piece(Enum):
     Q = 5
     K = 6
 
+class PieceColor(Enum):
+    WHITE = 1
+    BLACK = 2
+
 Pos = tuple[int, int]
 
 class Plmt:
-    def __init__(self, piece: Piece, pos: Pos) -> None:
+    def __init__(self, piece: Piece, pos: Pos, clr: PieceColor = PieceColor.WHITE) -> None:
         self.piece = piece
         self.pstn = pos
+        self.clr = clr
 
 def Moves(plmt: Plmt, maxDist: int = 1) -> Iterable[Pos]:
     if plmt.piece == Piece.N:

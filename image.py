@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from board import *
-from configargparse import ArgParser
 from datetime import datetime
 from enum import Enum
 import matplotlib.pyplot as plt
@@ -139,10 +138,7 @@ class BoardImage:
 
             # put first item into hlayout. save last piece
             lastLyt = ss.HBoxLayout()
-            color = "white"
-            if plmt.pstn[0] == plmt.pstn[1] == 0:
-                color = "black"
-            lastLyt.addSVG(f"{svgInDir}/{color}/{r[0].piece.name}.svg",
+            lastLyt.addSVG(f"{svgInDir}/{r[0].clr.name.lower()}/{r[0].piece.name}.svg",
                     alignment=ss.AlignLeft)
             lastPlmt = r[0]
             for plmt in r[1:]:
@@ -150,10 +146,7 @@ class BoardImage:
                 lyt = ss.HBoxLayout()
                 lyt.setSpacing(svgSz * (plmt.pstn[0]-lastPlmt.pstn[0]-1))
                 lyt.addLayout(lastLyt)
-                color = "white"
-                if plmt.pstn[0] == plmt.pstn[1] == 0:
-                    color = "black"
-                lyt.addSVG(f"{svgInDir}/{color}/{plmt.piece.name}.svg",
+                lyt.addSVG(f"{svgInDir}/{plmt.clr.name.lower()}/{plmt.piece.name}.svg",
                         alignment=ss.AlignLeft)
                 lastLyt, lastPlmt = lyt, plmt
             hlayouts.append(lastLyt)
